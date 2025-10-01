@@ -1,0 +1,17 @@
+- name: Hello World Play
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Печать тестового сообщения
+      debug:
+        msg: 'Hello, World'
+
+    - name: Выполнить учебную shell-команду
+      shell: |
+        echo I am on
+        uname -a
+      register: shell_output # сохранить результат в переменную
+
+    - name: Показать stdout команды
+      debug:
+        var: shell_output.stdout_lines

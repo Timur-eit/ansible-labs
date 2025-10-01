@@ -1,0 +1,19 @@
+- name: Update sshd_config
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Replace KbdInteractiveAuthentication setting
+      replace:
+        path: /etc/ssh/sshd_config
+        regexp: '^KbdInteractiveAuthentication\s+no'
+        replace: 'KbdInteractiveAuthentication yes'
+      notify: Restart sshd
+      # сделать restart только если были изменения в /etc/ssh/sshd_config в данной сессии
+      # если модуль replace не внёс изменений, уведомление в handler не отправится
+
+  handlers:
+    - name: Restart sshd
+      service:
+        name: ssh
+        state: restarted

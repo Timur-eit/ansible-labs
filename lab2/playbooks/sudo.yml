@@ -1,0 +1,13 @@
+- name: Configure sudo for student9
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Allow student9 sudo with NO password
+      copy:
+        dest: /etc/sudoers.d/student9
+        content: "student9 ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: '0440' # права на файл в стиле chmod
+

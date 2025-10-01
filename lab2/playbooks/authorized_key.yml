@@ -1,0 +1,10 @@
+- name: Add autumn2025 SSH key for student9
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Add key to authorized_keys
+      authorized_key:
+        user: student9
+        state: present
+        key: "{{ lookup('file', '~/.ssh/autumn2025.pub') }}"

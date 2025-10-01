@@ -1,0 +1,16 @@
+- name: Install joe editor
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: Install joe on Ubuntu/Debian
+      apt:
+        name: joe
+        state: present
+        update_cache: yes
+      when: inventory_hostname in ["host1", "host2"]
+
+    - name: Install joe on CentOS 7
+      raw: sudo yum install -y joe
+      when: inventory_hostname == "host3"

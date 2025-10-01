@@ -1,0 +1,27 @@
+- name: Install joe editor for student9
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Ensure apt cache is up to date
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install joe
+      apt:
+        name: joe
+        state: present
+
+    # проверяем, что joe установился и его можно запустить под student9 (не учебное задание, делал для себя, для практики)
+
+    # - name: Verify joe as student9
+    #   become: yes
+    #   become_user: student9
+    #   command: joe --version
+    #   register: joe_check
+    #   ignore_errors: yes
+
+    # - name: Show joe check output
+    #   debug:
+    #     var: joe_check.stdout

@@ -1,0 +1,11 @@
+- name: Create unique user
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Add user "student9"
+      user:
+        name: student9
+        shell: /bin/bash
+        state: present
+        create_home: yes

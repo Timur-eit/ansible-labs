@@ -1,0 +1,18 @@
+- name: Manage users
+  hosts: hosts
+  become: yes
+
+  tasks:
+    # По ошибке был создан юзер с неверным именем "myuser", таска для удаления юзера
+    - name: Remove old user "myuser"
+      user:
+        name: myuser
+        state: absent
+        remove: yes
+
+    - name: Add new user "student9"
+      user:
+        name: student9
+        shell: /bin/bash
+        state: present
+        create_home: yes

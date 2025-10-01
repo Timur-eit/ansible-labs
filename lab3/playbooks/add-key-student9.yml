@@ -1,0 +1,19 @@
+---
+- name: Add SSH key for student9
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Add authorized key on Ubuntu/Debian
+      authorized_key:
+        user: student9
+        state: present
+        key: "{{ lookup('file', '~/.ssh/autumn2025.pub') }}"
+      when: inventory_hostname in ["host1", "host2"]
+
+    - name: Add authorized key on CentOS 7
+      raw: |
+        sudo mkdir -p /home/student9/.ssh && \
+        echo "{{ lookup('file', '~/.ssh/autumn2025.pub') }}" | sudo tee -a /home/student9/.ssh/authorized_keys
+      when: inventory_hostname == "host3"
