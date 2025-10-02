@@ -1,0 +1,75 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/nginx_install
+
+# --- Install ---
+
+# --- Ubuntu (host1, host2) ---
+- name: Install nginx on Ubuntu
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  when: inventory_hostname in ["host1", "host2"]
+
+# --- CentOS (host3) через raw ---
+- name: Install nginx on CentOS
+  raw: 'yum install -y nginx'
+  when: inventory_hostname == "host3"
+
+- name: Ensure nginx is running and enabled on CentOS
+  raw: 'systemctl enable nginx && systemctl start nginx'
+  when: inventory_hostname == "host3"
+
+- name: Ensure html dir exists on CentOS
+  raw: 'mkdir -p /usr/share/nginx/html'
+  when: inventory_hostname == "host3"
+
+# --- Deploy ---
+
+# Ubuntu (host1, host2)
+- name: Deploy nginx.conf on Ubuntu
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: Restart nginx
+  when: inventory_hostname in ["host1", "host2"]
+
+- name: Ensure nginx is running and enabled on Ubuntu
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  when: inventory_hostname in ["host1", "host2"]
+
+- name: Deploy index.html on Ubuntu
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+  notify: Restart nginx
+  when: inventory_hostname in ["host1", "host2"]
+
+# CentOS (host3)
+- name: Render index.html locally
+  template:
+    src: index.html.j2
+    dest: /tmp/index.html.host3
+  delegate_to: localhost
+  become: false
+
+- name: Copy index.html to CentOS
+  raw: "cat > /usr/share/nginx/html/index.html <<'EOF'\n{{ lookup('file', '/tmp/index.html.host3') }}\nEOF"
+  when: inventory_hostname == "host3"
+  notify: Restart nginx
+
+- name: Render nginx.conf locally for CentOS
+  template:
+    src: nginx.conf.j2
+    dest: /tmp/nginx.conf.host3
+  delegate_to: localhost
+  become: false
+
+- name: Copy nginx.conf to CentOS
+  raw: "cat > /etc/nginx/nginx.conf <<'EOF'\n{{ lookup('file', '/tmp/nginx.conf.host3') }}\nEOF"
+  when: inventory_hostname == "host3"
+  notify: Restart nginx

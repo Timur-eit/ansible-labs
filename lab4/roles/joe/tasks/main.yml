@@ -1,0 +1,14 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/joe
+
+- name: Install joe on Ubuntu
+  apt:
+    name: joe
+    state: present
+    update_cache: yes
+  when: inventory_hostname in ["host1", "host2"]
+
+- name: Install joe on CentOS
+  raw: 'yum install -y joe'
+  when: inventory_hostname == "host3"

@@ -1,0 +1,43 @@
+- name: Enable CentOS Vault repos for 7.9.2009
+  hosts: host3
+  become: yes
+  gather_facts: no
+  remote_user: student9
+
+  tasks:
+    - name: Backup old repo file
+      raw: cp /etc/yum.repos.d/CentOS-Vault.repo /etc/yum.repos.d/CentOS-Vault.repo.bak || true
+
+    - name: Write minimal Vault repos (Base, Updates, Extras)
+      raw: |
+        cat > /etc/yum.repos.d/CentOS-Vault.repo <<'EOF'
+        [C7.9.2009-base]
+        name=CentOS-7.9.2009 - Base
+        baseurl=http://vault.centos.org/7.9.2009/os/\$basearch/
+        gpgcheck=1
+        enabled=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+        [C7.9.2009-updates]
+        name=CentOS-7.9.2009 - Updates
+        baseurl=http://vault.centos.org/7.9.2009/updates/\$basearch/
+        gpgcheck=1
+        enabled=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+        [C7.9.2009-extras]
+        name=CentOS-7.9.2009 - Extras
+        baseurl=http://vault.centos.org/7.9.2009/extras/\$basearch/
+        gpgcheck=1
+        enabled=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+        EOF
+
+    - name: Purge absolutely all sclo repo files
+      raw: rm -f /etc/yum.repos.d/*sclo*.repo /etc/yum.repos.d/*SCLo*.repo || true
+
+    - name: Clean yum cache
+      raw: yum clean all
+
+    - name: Rebuild yum cache
+      raw: yum makecache

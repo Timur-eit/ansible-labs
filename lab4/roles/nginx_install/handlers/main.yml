@@ -1,0 +1,9 @@
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
+  when: inventory_hostname in ["host1", "host2"]
+
+- name: Restart nginx
+  raw: systemctl restart nginx
+  when: inventory_hostname == "host3"

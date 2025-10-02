@@ -1,0 +1,7 @@
+#SPDX-License-Identifier: MIT-0
+---
+# defaults file for roles/user_with_key
+
+user_name: student9
+user_shell: /bin/bash
+ssh_pub_key_file: '~/.ssh/autumn2025.pub'

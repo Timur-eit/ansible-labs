@@ -1,0 +1,15 @@
+---
+- name: Lab4 site playbook
+  hosts: hosts
+  become: yes
+  gather_facts: no
+
+  pre_tasks:
+    - name: Gather facts on Ubuntu hosts only
+      ansible.builtin.setup:
+      when: inventory_hostname in ["host1", "host2"]
+
+  roles:
+    - user_with_key
+    - joe
+    - nginx_install

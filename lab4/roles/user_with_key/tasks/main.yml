@@ -1,0 +1,41 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/user_with_key
+
+- name: Ensure user exists on Ubuntu/Debian
+  user:
+    name: '{{ user_name }}'
+    shell: '{{ user_shell }}'
+    state: present
+    create_home: yes
+  when: inventory_hostname in ["host1", "host2"] # Ubuntu
+
+- name: Ensure .ssh directory exists (Ubuntu/Debian)
+  file:
+    path: '/home/{{ user_name }}/.ssh'
+    state: directory
+    owner: '{{ user_name }}'
+    group: '{{ user_name }}'
+    mode: '0700'
+  when: inventory_hostname in ["host1", "host2"] # Ubuntu
+
+- name: Add authorized key (Ubuntu/Debian)
+  authorized_key:
+    user: '{{ user_name }}'
+    key: "{{ lookup('file', ssh_pub_key_file) }}"
+    state: present
+  when: inventory_hostname in ["host1", "host2"] # Ubuntu
+
+# --- CentOS через raw (так как не получилось поставить современную версию питона) ---
+
+- name: Create user on CentOS
+  raw: 'id -u {{ user_name }} || useradd -m -s {{ user_shell }} {{ user_name }}'
+  when: inventory_hostname == "host3" # CentOS
+
+- name: Ensure .ssh directory exists (CentOS)
+  raw: 'mkdir -p /home/{{ user_name }}/.ssh && chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh && chmod 700 /home/{{ user_name }}/.ssh'
+  when: inventory_hostname == "host3" # CentOS
+
+- name: Deploy authorized key (CentOS)
+  raw: "cat > /home/{{ user_name }}/.ssh/authorized_keys <<'EOF'\n{{ lookup('file', ssh_pub_key_file) }}\nEOF && chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys && chmod 600 /home/{{ user_name }}/.ssh/authorized_keys"
+  when: inventory_hostname == "host3" # CentOS

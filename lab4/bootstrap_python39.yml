@@ -1,0 +1,45 @@
+- name: Ensure Python 3.9 exists on CentOS
+  hosts: host3
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: Check if python3.9 is present
+      raw: "python3.9 --version || echo 'absent'"
+      register: python39_check
+      changed_when: false
+
+    - name: Show python3.9 version (if present)
+      debug:
+        msg: 'CentOS Python3.9 version: {{ python39_check.stdout }}'
+
+    - name: Try to install EPEL repo (for python39)
+      raw: 'yum install -y epel-release'
+      when: "'absent' in python39_check.stdout"
+      register: epel_install
+      ignore_errors: true
+
+    - name: Fail if EPEL repo not available
+      fail:
+        msg: 'EPEL repo is not available (rc={{ epel_install.rc }}). Cannot install python39. Please switch to raw-only playbook.'
+      when:
+        - "'absent' in python39_check.stdout"
+        - epel_install is failed
+
+    - name: Install python39 if absent
+      raw: 'yum install -y python39'
+      when:
+        - "'absent' in python39_check.stdout"
+        - epel_install is succeeded
+
+    - name: Symlink /usr/bin/python3 -> /usr/bin/python3.9
+      raw: 'ln -sf /usr/bin/python3.9 /usr/bin/python3'
+      when:
+        - "'absent' in python39_check.stdout"
+        - epel_install is succeeded
+
+    - name: Gather facts after python install
+      setup:
+      when: epel_install is succeeded
+#
+# все это не сработало, решил для centos делать через raw
